@@ -7,7 +7,15 @@ Loading and preprocessing the data
 Here we read downloaded file in R from .csv format.
 
 ```r
-data <- read.csv("C:/R/activity.csv")
+if(!"ggplot2" %in% rownames(installed.packages())){install.packages("ggplot2")}
+library(ggplot2)
+
+fileUrl <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+fileName <- "data.zip"
+download.file(fileUrl, fileName)
+unzip(fileName)
+
+if (file.exists("activity.csv")){data <- read.csv("activity.csv")}
 ```
 
 
@@ -30,6 +38,18 @@ hist(stepsPerDate$steps, xlab = "Number of steps",
 ```
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
+Hm. I also want to see the histogram with smaller bars.
+
+
+```r
+g <- ggplot(stepsPerDate, aes(x = stepsPerDate$steps))
+g + geom_histogram(binwidth = 1000) + 
+        labs(x = "Number of steps", y = "Frequency", 
+             title = "Total number of steps taken per day")
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
 What about mean and median?
 
@@ -60,7 +80,7 @@ plot(stepsPerInterval$interval, stepsPerInterval$steps, type="l",
      xlab = "5-minute interval", ylab = "Average number of steps taken")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
 
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -104,7 +124,20 @@ hist(stepsPerDateFull$steps, xlab = "Number of steps",
      main = "Total number of steps taken per day")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+
+And here is more detailed one.
+
+```r
+g <- ggplot(stepsPerDateFull, aes(x = stepsPerDateFull$steps))
+g + geom_histogram(binwidth = 1000) + 
+        labs(x = "Number of steps", y = "Frequency", 
+             title = "Total number of steps taken per day")
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
+You can find mean and median below.
 
 ```r
 mean(stepsPerDateFull$steps)
@@ -147,8 +180,6 @@ levels(dataFull$day_type) <- c("weekday", "weekend")
 
 stepsPerInterval$stepsWeekday <- aggregate(steps ~ interval, dataFull[dataFull$day_type == "weekday",], mean)[,2]
 stepsPerInterval$stepsWeekend <- aggregate(steps ~ interval, dataFull[dataFull$day_type == "weekend",], mean)[,2]
-
-   
 par(mfrow=c(2,1))
 plot(stepsPerInterval$interval, stepsPerInterval$stepsWeekday, 
      xlab = "Interval", ylab = "Average number of steps",
@@ -158,4 +189,4 @@ plot(stepsPerInterval$interval, stepsPerInterval$stepsWeekend,
      type = "l", main = "Weekend")
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png) 

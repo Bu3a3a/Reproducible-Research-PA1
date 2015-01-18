@@ -6,7 +6,15 @@ Loading and preprocessing the data
 
 Here we read downloaded file in R from .csv format.
 ```{r, exho = TRUE, results='hide'}
-data <- read.csv("C:/R/activity.csv")
+if(!"ggplot2" %in% rownames(installed.packages())){install.packages("ggplot2")}
+library(ggplot2)
+
+fileUrl <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+fileName <- "data.zip"
+download.file(fileUrl, fileName)
+unzip(fileName)
+
+if (file.exists("activity.csv")){data <- read.csv("activity.csv")}
 ```
 
 
@@ -24,6 +32,15 @@ To see steps distribution lets make a histogram of the total number of steps tak
 stepsPerDate <- aggregate(steps ~ date, dataFiltered, sum)
 hist(stepsPerDate$steps, xlab = "Number of steps", 
      main = "Total number of steps taken per day")
+```
+
+Hm. I also want to see the histogram with smaller bars.
+
+```{r, echo = TRUE}
+g <- ggplot(stepsPerDate, aes(x = stepsPerDate$steps))
+g + geom_histogram(binwidth = 1000) + 
+        labs(x = "Number of steps", y = "Frequency", 
+             title = "Total number of steps taken per day")
 ```
 
 What about mean and median?
@@ -69,6 +86,18 @@ Take a look at new histogram of the total number of steps taken each day, its me
 stepsPerDateFull <- aggregate(steps ~ date, dataFull, sum)
 hist(stepsPerDateFull$steps, xlab = "Number of steps", 
      main = "Total number of steps taken per day")
+```
+
+And here is more detailed one.
+```{r, echo = TRUE}
+g <- ggplot(stepsPerDateFull, aes(x = stepsPerDateFull$steps))
+g + geom_histogram(binwidth = 1000) + 
+        labs(x = "Number of steps", y = "Frequency", 
+             title = "Total number of steps taken per day")
+```
+
+You can find mean and median below.
+```{r}
 mean(stepsPerDateFull$steps)
 median(stepsPerDateFull$steps)
 ```
@@ -80,7 +109,7 @@ Are there differences in activity patterns between weekdays and weekends?
 -----------------------------------------------------
 
 Lets see it.
-```{r, echo = TRUE}
+```{r, echo = TRUE, fig.height = 10}
 Sys.setlocale("LC_TIME","English United States")
 dataFull$day <- weekdays(as.Date(dataFull$date))
 dataFull$day_type <- dataFull$day == "Saturday" | dataFull$day == "Sunday"
@@ -90,8 +119,6 @@ levels(dataFull$day_type) <- c("weekday", "weekend")
 
 stepsPerInterval$stepsWeekday <- aggregate(steps ~ interval, dataFull[dataFull$day_type == "weekday",], mean)[,2]
 stepsPerInterval$stepsWeekend <- aggregate(steps ~ interval, dataFull[dataFull$day_type == "weekend",], mean)[,2]
-
-   
 par(mfrow=c(2,1))
 plot(stepsPerInterval$interval, stepsPerInterval$stepsWeekday, 
      xlab = "Interval", ylab = "Average number of steps",
